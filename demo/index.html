@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title></title>
+		<meta charset="UTF-8" />
+		<link rel="stylesheet" type="text/css" href="tooltipster.core.min.css" />
+		<link rel="stylesheet" type="text/css" href="../src/css/tooltipster-follower.css" />
+		
+		<script type="text/javascript" src="//code.jquery.com/jquery-1.10.0.min.js"></script>
+		<script type="text/javascript" src="tooltipster.core.min.js"></script>
+		<script type="text/javascript" src="../src/js/tooltipster-follower.js"></script>
+		
+		<style>
+			body {
+				margin: 0;
+				min-height: 500px;
+			}
+			
+			.tooltip {
+				border: 1px solid red;
+				display: inline-block;
+				margin: 300px 500px;
+				padding: 50px;
+			}
+		</style>
+		
+		<script type="text/javascript">
+			
+			$(document).ready(function() {
+				
+				$('.tooltip').tooltipster({
+					anchor: 'top-left',
+					content: 'bottom-right',
+					multiple: true,
+					offset: [20, -20],
+					plugins: ['laa.follower']
+				});
+				
+				$('.tooltip').tooltipster({
+					anchor: 'top-right',
+					content: 'bottom-left',
+					multiple: true,
+					offset: [-20, -20],
+					plugins: ['laa.follower']
+				});
+				
+				$('.tooltip').tooltipster({
+					anchor: 'bottom-left',
+					content: 'top-right',
+					multiple: true,
+					offset: [20, 20],
+					plugins: ['laa.follower']
+				});
+				
+				$('.tooltip').tooltipster({
+					anchor: 'bottom-right',
+					content: 'top-left',
+					multiple: true,
+					offset: [-20, 20],
+					plugins: ['laa.follower']
+				});
+				
+				$('.tooltip').tooltipster({
+					anchor: 'right-center',
+					content: 'left',
+					multiple: true,
+					offset: [-20, 0],
+					plugins: ['laa.follower']
+				});
+				
+				$('.tooltip').tooltipster({
+					anchor: 'left-center',
+					content: 'right',
+					multiple: true,
+					offset: [20, 0],
+					plugins: ['laa.follower']
+				});
+				
+				$('.tooltip').tooltipster({
+					anchor: 'top-center',
+					content: 'bottom',
+					multiple: true,
+					offset: [0, -60],
+					plugins: ['laa.follower']
+				});
+				
+				$('.tooltip').tooltipster({
+					anchor: 'bottom-center',
+					content: 'top',
+					multiple: true,
+					offset: [0, 60],
+					plugins: ['laa.follower']
+				});
+				
+				$('#lorem').remove();
+			});
+		</script>
+	</head>
+	<body>
+		<span class="tooltip">Hover me</span>
+		<span id="lorem"> Lorem ipsum dolor sit amet</span>
+	</body>
+</html>

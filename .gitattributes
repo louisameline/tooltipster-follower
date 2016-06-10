@@ -1,0 +1,9 @@
+# exclude binary and compiled files from diff
+
+*.min.js -diff binary
+
+# exclude unnecessary files from the export
+
+.gitattributes export-ignore
+.gitignore export-ignore
+/demo export-ignore
