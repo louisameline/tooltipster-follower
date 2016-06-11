@@ -410,7 +410,8 @@ $.tooltipster.plugin({
 				.css({
 					left: coord.left,
 					top: coord.top
-				});
+				})
+				.show();
 			
 			this.instance._trigger({
 				coord: coord,
@@ -473,6 +474,11 @@ $.tooltipster.plugin({
 			// Otherwise, it's a method call which is actually not supposed to happen
 			if (event) {
 				self._follow(event);
+			}
+			else {
+				// hide until a mousemove event is fired
+				self.instance.$tooltip
+					.hide();
 			}
 			
 			// append the tooltip HTML element to its parent
