@@ -16,14 +16,24 @@
 		<style>
 			body {
 				margin: 0;
-				min-height: 500px;
+				min-height: 1500px;
 			}
 			
 			.tooltip {
 				border: 1px solid red;
 				display: inline-block;
-				margin: 300px 500px;
-				padding: 50px;
+				margin: 100px 100px;
+				max-width: 200px;
+				padding: 30px;
+			}
+			
+			#fixed {
+				background: red;
+				height: 50px;
+				position: fixed;
+				right: 20px;
+				top: 200px;
+				width: 50px;
 			}
 		</style>
 		
@@ -36,7 +46,8 @@
 					content: 'bottom-right',
 					multiple: true,
 					offset: [20, -20],
-					plugins: ['laa.follower']
+					plugins: ['laa.follower'],
+					theme: 'tooltipster-punk'
 				});
 				
 				$('.tooltip').tooltipster({
@@ -44,7 +55,8 @@
 					content: 'bottom-left',
 					multiple: true,
 					offset: [-20, -20],
-					plugins: ['laa.follower']
+					plugins: ['laa.follower'],
+					theme: 'tooltipster-noir'
 				});
 				
 				$('.tooltip').tooltipster({
@@ -52,7 +64,8 @@
 					content: 'top-right',
 					multiple: true,
 					offset: [20, 20],
-					plugins: ['laa.follower']
+					plugins: ['laa.follower'],
+					theme: 'tooltipster-light'
 				});
 				
 				$('.tooltip').tooltipster({
@@ -60,7 +73,8 @@
 					content: 'top-left',
 					multiple: true,
 					offset: [-20, 20],
-					plugins: ['laa.follower']
+					plugins: ['laa.follower'],
+					theme: 'tooltipster-borderless'
 				});
 				
 				$('.tooltip').tooltipster({
@@ -68,7 +82,8 @@
 					content: 'left',
 					multiple: true,
 					offset: [-20, 0],
-					plugins: ['laa.follower']
+					plugins: ['laa.follower'],
+					theme: 'tooltipster-shadow'
 				});
 				
 				$('.tooltip').tooltipster({
@@ -96,13 +111,19 @@
 				});
 				
 				$('.tooltip').draggable({
-					grid: [30, 30],
+					grid: [10, 10],
 					scroll: false
+				});
+				
+				$('#fixed').tooltipster({
+					content: 'fixed',
+					plugins: ['laa.follower']
 				});
 			});
 		</script>
 	</head>
 	<body>
-		<span class="tooltip">Hover me</span>
+		<span class="tooltip">Drag me around the edges to see me deal with overflow</span>
+		<div id="fixed"></div>
 	</body>
 </html>

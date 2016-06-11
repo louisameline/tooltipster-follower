@@ -253,7 +253,7 @@ $.tooltipster.plugin({
 				// if the tooltip is on the left of the cursor
 				if (anchor == 'right-center') {
 					
-					// if it overflows the viewport
+					// if it overflows the viewport on the left side
 					if (coord.left < this.helper.geo.window.scroll.left) {
 						
 						// if it wouldn't overflow on the right
@@ -280,7 +280,7 @@ $.tooltipster.plugin({
 				}
 				else {
 					
-					// if it overflows the viewport
+					// if it overflows the viewport on the right side
 					if (coord.left + this.size.width > this.helper.geo.window.scroll.left + this.helper.geo.window.size.width) {
 						
 						var coordLeft = event.pageX - offset[0] - this.size.width;
@@ -304,6 +304,31 @@ $.tooltipster.plugin({
 							};
 						}
 					}
+				}
+				
+				// if it overflows the viewport at the bottom
+				if (coord.top + this.size.height > this.helper.geo.window.scroll.top + this.helper.geo.window.size.height) {
+					
+					// move up
+					coord.top = this.helper.geo.window.scroll.top + this.helper.geo.window.size.height - this.size.height;
+				}
+				// if it overflows the viewport at the top
+				if (coord.top < this.helper.geo.window.scroll.top) {
+					
+					// move down
+					coord.top = this.helper.geo.window.scroll.top;
+				}
+				// if it overflows the document at the bottom
+				if (coord.top + this.size.height > this.helper.geo.document.size.height) {
+					
+					// move up
+					coord.top = this.helper.geo.document.size.height - this.size.height;
+				}
+				// if it overflows the document at the top
+				if (coord.top < 0) {
+					
+					// no top document overflow
+					coord.top = 0;
 				}
 			}
 			
@@ -375,13 +400,23 @@ $.tooltipster.plugin({
 				}
 			}
 			
+			// ignore the scroll distance if the origin is fixed
+			if (this.helper.geo.origin.fixedLineage) {
+				coord.left -= this.helper.geo.window.scroll.left;
+				coord.top -= this.helper.geo.window.scroll.top;
+			}
+			
 			this.instance.$tooltip
 				.css({
 					left: coord.left,
 					top: coord.top
 				});
 			
-			this.instance._trigger('followed');
+			this.instance._trigger({
+				coord: coord,
+				event: event,
+				type: 'followed'
+			});
 		},
 		
 		/**
