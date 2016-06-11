@@ -1,5 +1,6 @@
 # tooltipster-follower
-Follower is a [Tooltipster](http://iamceege.github.io/tooltipster/) plugin to make tooltips follow the cursor.
+
+Follower is a [Tooltipster](http://iamceege.github.io/tooltipster/) plugin to make tooltips follow the cursor. MIT license.
 
 Installation
 ------------
@@ -73,4 +74,6 @@ $('.tooltip').tooltipster({
 Events
 ------
 
-`followed` events are triggered when the position of the tooltip is set or has changed.
+`follow` events are fired when the position of the tooltip is set. It has `event`, `helper` and `position` properties, as well as an `edit` property which is a function that you may use to edit the coordinates of the tooltip.
+
+`position` events are fired when Tooltipster asks Follower to re-evaluate the position of the tooltip, just like sideTip. Although we kept sideTip's original name for this event, it can be misleading as it is not fired every time the tooltip actually moves (use the `follow` events for that). The event has `event`, `helper` and `position` properties, and an `edit` property which is a function you can use to edit the proposed size of the tooltip.

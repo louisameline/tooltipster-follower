@@ -406,18 +406,24 @@ $.tooltipster.plugin({
 				coord.top -= this.helper.geo.window.scroll.top;
 			}
 			
-			this.instance.$tooltip
-				.css({
-					left: coord.left,
-					top: coord.top
-				})
-				.show();
+			var position = { coord: coord };
 			
 			this.instance._trigger({
-				coord: coord,
+				edit: function(p) {
+					position = p;
+				},
 				event: event,
-				type: 'followed'
+				helper: this.helper,
+				position: $.extend(true, {}, position),
+				type: 'follow'
 			});
+			
+			this.instance.$tooltip
+				.css({
+					left: position.coord.left,
+					top: position.coord.top,
+					visibility: 'visible'
+				});
 		},
 		
 		/**
@@ -442,14 +448,12 @@ $.tooltipster.plugin({
 				$clone = self.instance.$tooltip.clone(),
 				// start position tests session
 				ruler = $.tooltipster._getRuler($clone),
-				rulerResults = ruler.free().measure();
+				rulerResults = ruler.free().measure(),
+				position = {
+					size: rulerResults.size
+				};
 			
 			ruler.destroy();
-			
-			self.size = rulerResults.size;
-			
-			// pass to _follow()
-			self.helper = helper;
 			
 			// set position values on the original tooltip element
 			
@@ -463,27 +467,47 @@ $.tooltipster.plugin({
 					.css('position', '');
 			}
 			
+			self.instance._trigger({
+				edit: function(p) {
+					position = p;
+				},
+				event: event,
+				helper: helper,
+				position: $.extend(true, {}, position),
+				type: 'position'
+			});
+			
+			// pass to _follow()
+			self.helper = helper;
+			self.size = position.size;
+			
 			// set the size here, the position in _follow()
 			self.instance.$tooltip
 				.css({
-					height: self.size.height,
-					width: self.size.width
+					height: position.size.height,
+					width: position.size.width
 				});
 			
+			// append the tooltip HTML element to its parent. We do this before
+			// setting the coordinates so that the element is alway in the DOM when
+			// the `position` events are fired
+			self.instance.$tooltip.appendTo(self.instance.options.parent);
+			
 			// if an event triggered this method, we can tell where the mouse is.
-			// Otherwise, it's a method call which is actually not supposed to happen
+			// Otherwise, it's a method call (which is a bit weird)
 			if (event) {
 				self._follow(event);
 			}
 			else {
-				// hide until a mousemove event is fired
+				// hide until a mousemove event is fired. We don't use .hide() or 
+				// opacity:0 as it would kill the opening animation
 				self.instance.$tooltip
-					.hide();
+					.css('visibility', 'hidden');
 			}
 			
-			// append the tooltip HTML element to its parent
-			self.instance.$tooltip.appendTo(self.instance.options.parent);
-			
+			// Currently, this event is meant to give the size of the tooltip to
+			// Tooltipster. In the future, if it were also about its coordinates, we may
+			// have to fire it at each mousemove
 			self.instance._trigger({
 				type: 'repositioned',
 				event: event,
@@ -493,7 +517,8 @@ $.tooltipster.plugin({
 						left: 0,
 						top: 0
 					},
-					size: self.size
+					// may be used by the tooltip tracker
+					size: position.size
 				}
 			});
 		}
