@@ -3,10 +3,13 @@
 	<head>
 		<title></title>
 		<meta charset="UTF-8" />
+		<link rel="stylesheet" href="jquery-ui/jquery-ui-draggable/jquery-ui.min.css">
 		<link rel="stylesheet" type="text/css" href="tooltipster.core.min.css" />
 		<link rel="stylesheet" type="text/css" href="../src/css/tooltipster-follower.css" />
 		
 		<script type="text/javascript" src="//code.jquery.com/jquery-1.10.0.min.js"></script>
+		<script type="text/javascript" src="jquery-ui/jquery-ui-draggable/jquery-ui.min.js"></script>
+		<script type="text/javascript" src="jquery-ui/jquery.ui.touch-punch.min.js"></script>
 		<script type="text/javascript" src="tooltipster.core.min.js"></script>
 		<script type="text/javascript" src="../src/js/tooltipster-follower.js"></script>
 		
@@ -92,12 +95,14 @@
 					plugins: ['laa.follower']
 				});
 				
-				$('#lorem').remove();
+				$('.tooltip').draggable({
+					grid: [30, 30],
+					scroll: false
+				});
 			});
 		</script>
 	</head>
 	<body>
 		<span class="tooltip">Hover me</span>
-		<span id="lorem"> Lorem ipsum dolor sit amet</span>
 	</body>
 </html>

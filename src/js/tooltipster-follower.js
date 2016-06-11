@@ -30,6 +30,7 @@ $.tooltipster.plugin({
 			// the inition repositionOnScroll option value
 			self.initialROS = instance.option('repositionOnScroll');
 			self.instance = instance;
+			self.latestMousemove;
 			self.namespace = self.instance.namespace + '-follower';
 			self.options;
 			self.previousState = 'closed';
@@ -53,6 +54,32 @@ $.tooltipster.plugin({
 				self._optionsFormat();
 			});
 			
+			self.instance._on('reposition.'+ self.namespace, function(event) {
+				self._reposition(event.event, event.helper);
+			});
+			
+			// we need to register the mousemove events before the tooltip is actually
+			// opened, because the event that will be passed to _reposition at opening
+			// will be the mouseenter event, which is too old and does not reflect the
+			// current position of the mouse
+			self.instance._on('start.'+ self.namespace, function(event) {
+				
+				self.instance.$origin.on('mousemove.'+ self.namespace, function(e) {
+					self.latestMousemove = e;
+				});
+			});
+			
+			// undo the previous binding
+			self.instance._one('startend.'+ self.namespace +' startcancel.'+ self.namespace, function(event){
+				
+				self.instance.$origin.off('mousemove.'+ self.namespace);
+				
+				// forget the event
+				if (event.type == 'startcancel') {
+					self.latestMousemove = null;
+				}
+			});
+			
 			self.instance._on('state.'+ self.namespace, function(event) {
 				
 				if (event.state == 'closed') {
@@ -63,10 +90,6 @@ $.tooltipster.plugin({
 				}
 				
 				self.previousState = event.state;
-			});
-			
-			self.instance._on('reposition.'+ self.namespace, function(e) {
-				self._reposition(e.event, e.helper);
 			});
 		},
 		
@@ -139,6 +162,13 @@ $.tooltipster.plugin({
 		 * constrained widths for example.
 		 */
 		_follow: function(event) {
+			
+			// use the latest mousemove event if we were recording them before the tooltip was
+			// opened, and then let it go (see the comment on the `start` listener).
+			if (this.latestMousemove) {
+				event = this.latestMousemove;
+				this.latestMousemove = null;
+			}
 			
 			var coord = {},
 				anchor = this.options.anchor,
@@ -328,6 +358,8 @@ $.tooltipster.plugin({
 					left: coord.left,
 					top: coord.top
 				});
+			
+			this.instance._trigger('followed');
 		},
 		
 		/**
@@ -352,46 +384,14 @@ $.tooltipster.plugin({
 				$clone = self.instance.$tooltip.clone(),
 				// start position tests session
 				ruler = $.tooltipster._getRuler($clone),
-				rulerResults = ruler.free().measure(),
-				finalResult = {
-					size: {
-						height: rulerResults.size.height,
-						width: rulerResults.size.width
-					}
-				};
+				rulerResults = ruler.free().measure();
 			
-			this.helper = helper;
-			
-			// beginners may not be comfortable with the concept of editing the object
-			//  passed by reference, so we provide an edit function and pass a clone
-			var finalResultClone = $.extend(true, {}, finalResult);
-			
-			// emit an event on the instance
-			self.instance._trigger({
-				helper: helper,
-				type: 'position',
-				edit: function(result) {
-					finalResult = result;
-				},
-				position: finalResultClone
-			});
-			
-			if (self.options.functionPosition) {
-				
-				// add some variables to the helper for the functionPosition callback
-				helper.origin = self.instance.$origin[0];
-				helper.tooltip = self.instance.$tooltip[0];
-				
-				var result = self.options.functionPosition.call(self, self.instance, helper, finalResultClone);
-				
-				if (result) finalResult = result;
-			}
-			
-			// end the positioning tests session (the user might have had a
-			// use for it during the position event, now it's over)
 			ruler.destroy();
 			
-			self.size = finalResult.size;
+			self.size = rulerResults.size;
+			
+			// pass to _follow()
+			self.helper = helper;
 			
 			// set position values on the original tooltip element
 			
@@ -405,18 +405,17 @@ $.tooltipster.plugin({
 					.css('position', '');
 			}
 			
+			// set the size here, the position in _follow()
 			self.instance.$tooltip
 				.css({
 					height: self.size.height,
 					width: self.size.width
 				});
 			
-			// if an event triggered this method, we can tell where the mouse is
+			// if an event triggered this method, we can tell where the mouse is.
+			// Otherwise, it's a method call which is actually not supposed to happen
 			if (event) {
 				self._follow(event);
-			}
-			else {
-				
 			}
 			
 			// append the tooltip HTML element to its parent
@@ -425,7 +424,14 @@ $.tooltipster.plugin({
 			self.instance._trigger({
 				type: 'repositioned',
 				event: event,
-				position: finalResult
+				position: {
+					// won't be used anyway since we enabled repositionOnScroll
+					coord: {
+						left: 0,
+						top: 0
+					},
+					size: self.size
+				}
 			});
 		}
 	}
