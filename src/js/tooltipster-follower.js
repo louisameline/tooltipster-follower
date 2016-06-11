@@ -93,6 +93,9 @@ $.tooltipster.plugin({
 			});
 		},
 		
+		/**
+		 * Called when the tooltip has closed
+		 */
 		_close: function() {
 			
 			// detach our content object first, so the next jQuery's remove()
@@ -110,7 +113,8 @@ $.tooltipster.plugin({
 		},
 		
 		/**
-		 * Contains the HTML markup of the tooltip.
+		 * Contains the HTML markup of the tooltip and the bindings the should
+		 * exist as long as the tooltip is open
 		 *
 		 * @return {object} The tooltip, as a jQuery-wrapped HTML element
 		 */
@@ -145,6 +149,9 @@ $.tooltipster.plugin({
 			self.instance._trigger('created');
 		},
 		
+		/**
+		 * Called upon the destruction of the tooltip or the destruction of the plugin
+		 */
 		_destroy: function() {
 			
 			this.instance.off('.'+ this.namespace);
@@ -173,6 +180,16 @@ $.tooltipster.plugin({
 			var coord = {},
 				anchor = this.options.anchor,
 				offset = $.merge([], this.options.offset);
+			
+			// the scroll data of the helper must be updated manually on mousemove when the
+			// origin is fixed, because Tooltipster will not call _reposition on scroll, so
+			// it's out of date. Even though the tooltip will be fixed too, we need to know
+			// the scroll distance to determine the position of the pointer relatively to the
+			// viewport
+			this.helper.geo.window.scroll = {
+				left: $.tooltipster.env.window.scrollX || $.tooltipster.env.window.document.documentElement.scrollLeft,
+				top: $.tooltipster.env.window.scrollY || $.tooltipster.env.window.document.documentElement.scrollTop
+			};
 			
 			// coord left
 			switch (anchor) {
@@ -399,9 +416,9 @@ $.tooltipster.plugin({
 			this.instance.$tooltip
 				.css({
 					left: position.coord.left,
-					top: position.coord.top,
-					visibility: 'visible'
-				});
+					top: position.coord.top
+				})
+				.show();
 		},
 		
 		/**
@@ -418,7 +435,10 @@ $.tooltipster.plugin({
 		},
 		
 		/**
-		 *
+		 * Called when Tooltipster thinks the tooltip should be repositioned/resized
+		 * (there can be many reasons for that). Tooltipster does not take mouse moves
+		 * into account, for that we have our own listeners that will adjust the
+		 * position (see _follow())
 		 */
 		_reposition: function(event, helper) {
 			
@@ -430,8 +450,6 @@ $.tooltipster.plugin({
 				position = {
 					size: rulerResults.size
 				};
-			
-			ruler.destroy();
 			
 			// set position values on the original tooltip element
 			
@@ -452,8 +470,12 @@ $.tooltipster.plugin({
 				event: event,
 				helper: helper,
 				position: $.extend(true, {}, position),
+				tooltipClone: $clone[0],
 				type: 'position'
 			});
+			
+			// the clone won't be needed anymore
+			ruler.destroy();
 			
 			// pass to _follow()
 			self.helper = helper;
@@ -466,22 +488,19 @@ $.tooltipster.plugin({
 					width: position.size.width
 				});
 			
-			// append the tooltip HTML element to its parent. We do this before
-			// setting the coordinates so that the element is alway in the DOM when
-			// the `position` events are fired
-			self.instance.$tooltip.appendTo(self.instance.options.parent);
-			
 			// if an event triggered this method, we can tell where the mouse is.
 			// Otherwise, it's a method call (which is a bit weird)
 			if (event) {
 				self._follow(event);
 			}
 			else {
-				// hide until a mousemove event is fired. We don't use .hide() or 
-				// opacity:0 as it would kill the opening animation
+				// hide until a mouse event fires _follow()
 				self.instance.$tooltip
-					.css('visibility', 'hidden');
+					.hide();
 			}
+			
+			// append the tooltip HTML element to its parent
+			self.instance.$tooltip.appendTo(self.instance.options.parent);
 			
 			// Currently, this event is meant to give the size of the tooltip to
 			// Tooltipster. In the future, if it were also about its coordinates, we may
