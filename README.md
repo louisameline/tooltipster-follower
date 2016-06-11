@@ -48,9 +48,9 @@ Options
 
 `maxWidth` The maximum width of the tooltip. Default: **null**
 
-`offset` The position of the anchor in the coordinate system, in the form `[x, y]` (see the illustration below). **Default: [15, -15]**
+`offset` The position of the anchor in the coordinate system, in the form `[x,y]` (see the illustration below). **Default: [15,-15]**
 
-`anchor` The anchor is the point by of the tooltip by which it is tied to the coordinate system whose origin is the current position of the mouse (see the illustration below). There are eight possible values: `top-left`, `top-center`, `top-right`, `left-center`, `left-right`, `bottom-left`, `bottom-center`, `bottom-right`. **Default: `top-left`**
+`anchor` The anchor is the point of the tooltip which ties it to the coordinate system (see the illustration below). There are eight possible values: `top-left`, `top-center`, `top-right`, `left-center`, `left-right`, `bottom-left`, `bottom-center`, `bottom-right`. **Default: `top-left`**
 
 > All Tooltipster options, methods and events remain available. Only sideTip's features will be unavailable on tooltips that use Follower instead (read this [note](http://iamceege.github.io/tooltipster/#plugins_sidetip)).
 
@@ -68,7 +68,7 @@ $('.tooltip').tooltipster({
 });
 ```
 
-![Figures](http://louisameline.github.io/tooltipster-follower/doc/figure.png)
+![Figures](http://louisameline.github.io/tooltipster-follower/doc/figures.png)
 
 Events
 ------
