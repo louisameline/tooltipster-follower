@@ -25,11 +25,11 @@ Include the javascript plugin file in your page AFTER Tooltipster's file. Also i
 Usage
 -----
 
-Declare the `laa.follower` plugin in the options of the tooltips you want to follow the cursor, instead of `tooltipster.sideTip`:
+Declare the `follower` plugin in the options of the tooltips you want to follow the cursor, instead of `sideTip`:
 
 ```javascript
 $('.tooltip').tooltipster({
-    plugins: ['laa.follower']
+    plugins: ['follower']
 });
 ```
 
@@ -64,7 +64,7 @@ $('.tooltip').tooltipster({
     minWidth: 200,
     maxWidth: 300,
     offset: [20, 20],
-    plugins: ['laa.follower'],
+    plugins: ['follower'],
     theme: 'tooltipster-noir'
 });
 ```
