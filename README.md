@@ -53,7 +53,7 @@ Options
 
 `anchor` The anchor is the point of the tooltip which ties it to the coordinate system (see the illustration below). There are eight possible values: `top-left`, `top-center`, `top-right`, `left-center`, `left-right`, `bottom-left`, `bottom-center`, `bottom-right`. **Default: `top-left`**
 
-> All Tooltipster options, methods and events remain available. Only sideTip's features will be unavailable on tooltips that use Follower instead (read this [note](http://iamceege.github.io/tooltipster/#plugins_sidetip)).
+> All of Tooltipster's options, methods and events remain available. Only sideTip's features will be unavailable on tooltips that use Follower instead (read this [note](http://iamceege.github.io/tooltipster/#plugins_sidetip)).
 
 Examples
 --------
