@@ -27,6 +27,7 @@ $.tooltipster._plugin({
 	instance: {
 		/**
 		 * @return {object} An object with the defaults options
+		 * @private
 		 */
 		__defaults: function() {
 			
@@ -40,8 +41,10 @@ $.tooltipster._plugin({
 		
 		/**
 		 * Run once at instantiation of the plugin
-		 *
+		 * 
 		 * @param {object} instance The tooltipster object that instantiated this plugin
+		 * @return {self}
+		 * @private
 		 */
 		__init: function(instance) {
 			
@@ -53,7 +56,7 @@ $.tooltipster._plugin({
 			// the inition repositionOnScroll option value
 			self.__initialROS = instance.option('repositionOnScroll');
 			self.__instance = instance;
-			self.__latestMousemove;
+			self.__latestMouseEvent;
 			self.__namespace = 'tooltipster-follower-'+ Math.round(Math.random()*1000000);
 			self.__pointerPosition;
 			self.__previousState = 'closed';
@@ -89,7 +92,7 @@ $.tooltipster._plugin({
 			self.__instance._on('start.'+ self.__namespace, function(event) {
 				
 				self.__instance._$origin.on('mousemove.'+ self.__namespace, function(e) {
-					self.__latestMousemove = e;
+					self.__latestMouseEvent = e;
 				});
 			});
 			
@@ -100,7 +103,7 @@ $.tooltipster._plugin({
 				
 				// forget the event
 				if (event.type == 'startcancel') {
-					self.__latestMousemove = null;
+					self.__latestMouseEvent = null;
 				}
 			});
 			
@@ -115,10 +118,15 @@ $.tooltipster._plugin({
 				
 				self.__previousState = event.state;
 			});
+			
+			return self;
 		},
 		
 		/**
 		 * Called when the tooltip has closed
+		 *
+		 * @return {self}
+		 * @private
 		 */
 		__close: function() {
 			
@@ -134,13 +142,19 @@ $.tooltipster._plugin({
 			
 			// stop listening to mouse moves
 			$($.tooltipster._env.window.document).off('.'+ this.__namespace);
+			
+			// reset the event
+			this.__latestMouseEvent = null;
+			
+			return this;
 		},
 		
 		/**
 		 * Contains the HTML markup of the tooltip and the bindings the should
 		 * exist as long as the tooltip is open
 		 *
-		 * @return {object} The tooltip, as a jQuery-wrapped HTML element
+		 * @return {self}
+		 * @private
 		 */
 		__create: function() {
 			
@@ -171,10 +185,15 @@ $.tooltipster._plugin({
 			
 			// tell the instance that the tooltip element has been created
 			self.__instance._trigger('created');
+			
+			return self;
 		},
 		
 		/**
 		 * Called upon the destruction of the tooltip or the destruction of the plugin
+		 * 
+		 * @return {self}
+		 * @private
 		 */
 		__destroy: function() {
 			
@@ -183,6 +202,8 @@ $.tooltipster._plugin({
 			if (!this.__initialROS) {
 				this.__instance.option('repositionOnScroll', false);
 			}
+			
+			return this;
 		},
 		
 		/**
@@ -191,265 +212,284 @@ $.tooltipster._plugin({
 		 * Note: this is less "smart" than sideTip, which tests scenarios before choosing one.
 		 * Here we have to be fast so the moving animation can stay fluid. So there will be no
 		 * constrained widths for example.
+		 * 
+		 * @return {self}
+		 * @private
 		 */
 		__follow: function(event) {
 			
-			// use the latest mousemove event if we were recording them before the tooltip was
-			// opened, and then let it go (see the comment on the `start` listener).
-			if (this.__latestMousemove) {
-				event = this.__latestMousemove;
-				this.__latestMousemove = null;
+			// store the event in case it's a method call that triggers this method next time,
+			// or use the latest mousemove event if we have one.
+			if (event) {
+				this.__latestMouseEvent = event;
+			}
+			else if (this.__latestMouseEvent) {
+				event = this.__latestMouseEvent;
 			}
 			
-			var coord = {},
-				anchor = this.__options.anchor,
-				offset = $.merge([], this.__options.offset);
-			
-			// the scroll data of the helper must be updated manually on mousemove when the
-			// origin is fixed, because Tooltipster will not call __reposition on scroll, so
-			// it's out of date. Even though the tooltip will be fixed too, we need to know
-			// the scroll distance to determine the position of the pointer relatively to the
-			// viewport
-			this.__helper.geo.window.scroll = {
-				left: $.tooltipster._env.window.scrollX || $.tooltipster._env.window.document.documentElement.scrollLeft,
-				top: $.tooltipster._env.window.scrollY || $.tooltipster._env.window.document.documentElement.scrollTop
-			};
-			
-			// coord left
-			switch (anchor) {
+			if (event) {
 				
-				case 'top-left':
-				case 'left-center':
-				case 'bottom-left':
-					coord.left = event.pageX + offset[0];
-					break;
+				var coord = {},
+					anchor = this.__options.anchor,
+					offset = $.merge([], this.__options.offset);
 				
-				case 'top-center':
-				case 'bottom-center':
-					coord.left = event.pageX + offset[0] - this.__size.width / 2;
-					break;
+				// the scroll data of the helper must be updated manually on mousemove when the
+				// origin is fixed, because Tooltipster will not call __reposition on scroll, so
+				// it's out of date. Even though the tooltip will be fixed too, we need to know
+				// the scroll distance to determine the position of the pointer relatively to the
+				// viewport
+				this.__helper.geo.window.scroll = {
+					left: $.tooltipster._env.window.scrollX || $.tooltipster._env.window.document.documentElement.scrollLeft,
+					top: $.tooltipster._env.window.scrollY || $.tooltipster._env.window.document.documentElement.scrollTop
+				};
 				
-				case 'top-right':
-				case 'right-center':
-				case 'bottom-right':
-					coord.left = event.pageX + offset[0] - this.__size.width;
-					break;
-				
-				default:
-					console.log('Wrong anchor value');
-					break;
-			}
-			
-			// coord top
-			switch (anchor) {
-				
-				case 'top-left':
-				case 'top-center':
-				case 'top-right':
-					// minus because the Y axis is reversed (pos above the X axis, neg below)
-					coord.top = event.pageY - offset[1];
-					break;
-				
-				case 'left-center':
-				case 'right-center':
-					coord.top = event.pageY - offset[1] - this.__size.height / 2;
-					break;
-				
-				case 'bottom-left':
-				case 'bottom-center':
-				case 'bottom-right':
-					coord.top = event.pageY - offset[1] - this.__size.height;
-					break;
-			}
-			
-			// if the tooltip does not fit on the given side, see if it could fit on the
-			// opposite one, otherwise put at the bottom (which may be moved again to the
-			// top by the rest of the script below)
-			if (	anchor == 'left-center'
-				||	anchor == 'right-center'
-			){
-				
-				// if the tooltip is on the left of the cursor
-				if (anchor == 'right-center') {
+				// coord left
+				switch (anchor) {
 					
-					// if it overflows the viewport on the left side
-					if (coord.left < this.__helper.geo.window.scroll.left) {
+					case 'top-left':
+					case 'left-center':
+					case 'bottom-left':
+						coord.left = event.pageX + offset[0];
+						break;
+					
+					case 'top-center':
+					case 'bottom-center':
+						coord.left = event.pageX + offset[0] - this.__size.width / 2;
+						break;
+					
+					case 'top-right':
+					case 'right-center':
+					case 'bottom-right':
+						coord.left = event.pageX + offset[0] - this.__size.width;
+						break;
+					
+					default:
+						console.log('Wrong anchor value');
+						break;
+				}
+				
+				// coord top
+				switch (anchor) {
+					
+					case 'top-left':
+					case 'top-center':
+					case 'top-right':
+						// minus because the Y axis is reversed (pos above the X axis, neg below)
+						coord.top = event.pageY - offset[1];
+						break;
+					
+					case 'left-center':
+					case 'right-center':
+						coord.top = event.pageY - offset[1] - this.__size.height / 2;
+						break;
+					
+					case 'bottom-left':
+					case 'bottom-center':
+					case 'bottom-right':
+						coord.top = event.pageY - offset[1] - this.__size.height;
+						break;
+				}
+				
+				// if the tooltip does not fit on the given side, see if it could fit on the
+				// opposite one, otherwise put at the bottom (which may be moved again to the
+				// top by the rest of the script below)
+				if (	anchor == 'left-center'
+					||	anchor == 'right-center'
+				){
+					
+					// if the tooltip is on the left of the cursor
+					if (anchor == 'right-center') {
 						
-						// if it wouldn't overflow on the right
-						if (event.pageX - offset[0] + this.__size.width <= this.__helper.geo.window.scroll.left + this.__helper.geo.window.size.width) {
+						// if it overflows the viewport on the left side
+						if (coord.left < this.__helper.geo.window.scroll.left) {
 							
-							// move to the right
-							anchor = 'left-center';
-							// reverse the offset as well
-							offset[0] = -offset[0];
-							coord.left = event.pageX + offset[0];
-						}
-						else {
-							// move to the bottom left
-							anchor = 'top-right';
-							// we'll use the X offset to move the tooltip on the Y axis. Maybe
-							// we'll make this configurable at some point
-							offset[1] = offset[0];
-							coord = {
-								left: 0,
-								top: event.pageY - offset[1]
-							};
+							// if it wouldn't overflow on the right
+							if (event.pageX - offset[0] + this.__size.width <= this.__helper.geo.window.scroll.left + this.__helper.geo.window.size.width) {
+								
+								// move to the right
+								anchor = 'left-center';
+								// reverse the offset as well
+								offset[0] = -offset[0];
+								coord.left = event.pageX + offset[0];
+							}
+							else {
+								// move to the bottom left
+								anchor = 'top-right';
+								// we'll use the X offset to move the tooltip on the Y axis. Maybe
+								// we'll make this configurable at some point
+								offset[1] = offset[0];
+								coord = {
+									left: 0,
+									top: event.pageY - offset[1]
+								};
+							}
 						}
 					}
-				}
-				else {
-					
-					// if it overflows the viewport on the right side
-					if (coord.left + this.__size.width > this.__helper.geo.window.scroll.left + this.__helper.geo.window.size.width) {
+					else {
 						
-						var coordLeft = event.pageX - offset[0] - this.__size.width;
-						
-						// if it wouldn't overflow on the left
-						if (coordLeft >= 0) {
+						// if it overflows the viewport on the right side
+						if (coord.left + this.__size.width > this.__helper.geo.window.scroll.left + this.__helper.geo.window.size.width) {
 							
-							// move to the left
-							anchor = 'right-center';
-							// reverse the offset as well
-							offset[0] = -offset[0];
-							coord.left = coordLeft;
-						}
-						else {
-							// move to the bottom right
-							anchor = 'top-left';
-							offset[1] = -offset[0];
-							coord = {
-								left: event.pageX + offset[0],
-								top: event.pageY - offset[1]
-							};
+							var coordLeft = event.pageX - offset[0] - this.__size.width;
+							
+							// if it wouldn't overflow on the left
+							if (coordLeft >= 0) {
+								
+								// move to the left
+								anchor = 'right-center';
+								// reverse the offset as well
+								offset[0] = -offset[0];
+								coord.left = coordLeft;
+							}
+							else {
+								// move to the bottom right
+								anchor = 'top-left';
+								offset[1] = -offset[0];
+								coord = {
+									left: event.pageX + offset[0],
+									top: event.pageY - offset[1]
+								};
+							}
 						}
 					}
-				}
-				
-				// if it overflows the viewport at the bottom
-				if (coord.top + this.__size.height > this.__helper.geo.window.scroll.top + this.__helper.geo.window.size.height) {
 					
-					// move up
-					coord.top = this.__helper.geo.window.scroll.top + this.__helper.geo.window.size.height - this.__size.height;
-				}
-				// if it overflows the viewport at the top
-				if (coord.top < this.__helper.geo.window.scroll.top) {
-					
-					// move down
-					coord.top = this.__helper.geo.window.scroll.top;
-				}
-				// if it overflows the document at the bottom
-				if (coord.top + this.__size.height > this.__helper.geo.document.size.height) {
-					
-					// move up
-					coord.top = this.__helper.geo.document.size.height - this.__size.height;
-				}
-				// if it overflows the document at the top
-				if (coord.top < 0) {
-					
-					// no top document overflow
-					coord.top = 0;
-				}
-			}
-			
-			// when the tooltip is not on a side, it may freely move horizontally because
-			// it won't go under the pointer
-			if (	anchor != 'left-center'
-				&&	anchor != 'right-center'
-			){
-				
-				// left and right overflow
-				
-				if (coord.left + this.__size.width > this.__helper.geo.window.scroll.left + this.__helper.geo.window.size.width) {
-					coord.left = this.__helper.geo.window.scroll.left + this.__helper.geo.window.size.width - this.__size.width;
-				}
-				
-				// don't ever let document overflow on the left, only on the right, so the user
-				// can scroll. Note: right overflow should not happen often because when
-				// measuring the natural width, text is already broken to fit into the viewport.
-				if (coord.left < 0) {
-					coord.left = 0;
-				}
-				
-				// top and bottom overflow
-				
-				var pointerViewportY = event.pageY - this.__helper.geo.window.scroll.top;
-				
-				// if the tooltip is above the pointer
-				if (anchor.indexOf('bottom') == 0) {
-					
-					// if it overflows the viewport on top
+					// if it overflows the viewport at the bottom
+					if (coord.top + this.__size.height > this.__helper.geo.window.scroll.top + this.__helper.geo.window.size.height) {
+						
+						// move up
+						coord.top = this.__helper.geo.window.scroll.top + this.__helper.geo.window.size.height - this.__size.height;
+					}
+					// if it overflows the viewport at the top
 					if (coord.top < this.__helper.geo.window.scroll.top) {
 						
-						// if the tooltip overflows the document at the top
-						if (	coord.top < 0
-							// if there is more space in the viewport below the pointer and that it won't
-							// overflow the document, switch to the bottom. In the latter case, it might
-							// seem odd not to switch to the bottom while there is more space, but the
-							// idea is that the user couldn't close the tooltip, scroll down and try to
-							// open it again, whereas he can do that at the top
-							||	(	pointerViewportY < this.__helper.geo.window.size.height - pointerViewportY
-								&&	event.pageY + offset[1] + this.__size.height <= this.__helper.geo.document.size.height
-							)
-						) {
-							coord.top = event.pageY + offset[1];
-						}
+						// move down
+						coord.top = this.__helper.geo.window.scroll.top;
+					}
+					// if it overflows the document at the bottom
+					if (coord.top + this.__size.height > this.__helper.geo.document.size.height) {
+						
+						// move up
+						coord.top = this.__helper.geo.document.size.height - this.__size.height;
+					}
+					// if it overflows the document at the top
+					if (coord.top < 0) {
+						
+						// no top document overflow
+						coord.top = 0;
 					}
 				}
-				// similar logic
-				else {
+				
+				// when the tooltip is not on a side, it may freely move horizontally because
+				// it won't go under the pointer
+				if (	anchor != 'left-center'
+					&&	anchor != 'right-center'
+				){
 					
-					var coordBottom = coord.top + this.__size.height;
+					// left and right overflow
 					
-					// if it overflows at the bottom
-					if (coordBottom > this.__helper.geo.window.scroll.top + this.__helper.geo.window.size.height) {
+					if (coord.left + this.__size.width > this.__helper.geo.window.scroll.left + this.__helper.geo.window.size.width) {
+						coord.left = this.__helper.geo.window.scroll.left + this.__helper.geo.window.size.width - this.__size.width;
+					}
+					
+					// don't ever let document overflow on the left, only on the right, so the user
+					// can scroll. Note: right overflow should not happen often because when
+					// measuring the natural width, text is already broken to fit into the viewport.
+					if (coord.left < 0) {
+						coord.left = 0;
+					}
+					
+					// top and bottom overflow
+					
+					var pointerViewportY = event.pageY - this.__helper.geo.window.scroll.top;
+					
+					// if the tooltip is above the pointer
+					if (anchor.indexOf('bottom') == 0) {
 						
-						// if there is more space above the pointer or if it overflows the document
-						if (	pointerViewportY > this.__helper.geo.window.size.height - pointerViewportY
-							||	pointerViewportY - offset[1] + this.__size.height <= this.__helper.geo.document.size.height
-						) {
+						// if it overflows the viewport on top
+						if (coord.top < this.__helper.geo.window.scroll.top) {
 							
-							// move it unless it would overflow the document at the top too
-							var coordTop = event.pageY + offset[1] - this.__size.height;
+							// if the tooltip overflows the document at the top
+							if (	coord.top < 0
+									// if there is more space in the viewport below the pointer and that it won't
+									// overflow the document, switch to the bottom. In the latter case, it might
+									// seem odd not to switch to the bottom while there is more space, but the
+									// idea is that the user couldn't close the tooltip, scroll down and try to
+									// open it again, whereas he can do that at the top
+								||	(	pointerViewportY < this.__helper.geo.window.size.height - pointerViewportY
+									&&	event.pageY + offset[1] + this.__size.height <= this.__helper.geo.document.size.height
+								)
+							) {
+								coord.top = event.pageY + offset[1];
+							}
+						}
+					}
+					// similar logic
+					else {
+						
+						var coordBottom = coord.top + this.__size.height;
+						
+						// if it overflows at the bottom
+						if (coordBottom > this.__helper.geo.window.scroll.top + this.__helper.geo.window.size.height) {
 							
-							if (coordTop >= 0) {
-								coord.top = coordTop;
+							// if there is more space above the pointer or if it overflows the document
+							if (	pointerViewportY > this.__helper.geo.window.size.height - pointerViewportY
+								||	pointerViewportY - offset[1] + this.__size.height <= this.__helper.geo.document.size.height
+							) {
+								
+								// move it unless it would overflow the document at the top too
+								var coordTop = event.pageY + offset[1] - this.__size.height;
+								
+								if (coordTop >= 0) {
+									coord.top = coordTop;
+								}
 							}
 						}
 					}
 				}
+				
+				// ignore the scroll distance if the origin is fixed
+				if (this.__helper.geo.origin.fixedLineage) {
+					coord.left -= this.__helper.geo.window.scroll.left;
+					coord.top -= this.__helper.geo.window.scroll.top;
+				}
+				
+				var position = { coord: coord };
+				
+				this.__instance._trigger({
+					edit: function(p) {
+						position = p;
+					},
+					event: event,
+					helper: this.__helper,
+					position: $.extend(true, {}, position),
+					type: 'follow'
+				});
+				
+				this.__instance._$tooltip
+					.css({
+						left: position.coord.left,
+						top: position.coord.top
+					})
+					.show();
+			}
+			else {
+				// hide until a mouse event happens
+				this.__instance._$tooltip
+					.hide();
 			}
 			
-			// ignore the scroll distance if the origin is fixed
-			if (this.__helper.geo.origin.fixedLineage) {
-				coord.left -= this.__helper.geo.window.scroll.left;
-				coord.top -= this.__helper.geo.window.scroll.top;
-			}
-			
-			var position = { coord: coord };
-			
-			this.__instance._trigger({
-				edit: function(p) {
-					position = p;
-				},
-				event: event,
-				helper: this.__helper,
-				position: $.extend(true, {}, position),
-				type: 'follow'
-			});
-			
-			this.__instance._$tooltip
-				.css({
-					left: position.coord.left,
-					top: position.coord.top
-				})
-				.show();
+			return this;
 		},
 		
 		/**
 		 * (Re)compute this.__options from the options declared to the instance
+		 * 
+		 * @return {self}
+		 * @private
 		 */
 		__optionsFormat: function() {
 			this.__options = this.__instance._optionsExtract(pluginName, this.__defaults());
+			return this;
 		},
 		
 		/**
@@ -457,6 +497,9 @@ $.tooltipster._plugin({
 		 * (there can be many reasons for that). Tooltipster does not take mouse moves
 		 * into account, for that we have our own listeners that will adjust the
 		 * position (see __follow())
+		 * 
+		 * @return {self}
+		 * @private
 		 */
 		__reposition: function(event, helper) {
 			
@@ -506,16 +549,10 @@ $.tooltipster._plugin({
 					width: position.size.width
 				});
 			
-			// if an event triggered this method, we can tell where the mouse is.
-			// Otherwise, it's a method call (which is a bit weird)
-			if (event) {
-				self.__follow(event);
-			}
-			else {
-				// hide until a mouse event fires __follow()
-				self.__instance._$tooltip
-					.hide();
-			}
+			// reposition. We don't pass the event as it may be stale if it's the mouseenter
+			// event that initially started an opening delay. We rely on the events we
+			// recorded ourselves instead.
+			self.__follow();
 			
 			// append the tooltip HTML element to its parent
 			self.__instance._$tooltip.appendTo(self.__instance.option('parent'));
@@ -536,6 +573,8 @@ $.tooltipster._plugin({
 					size: position.size
 				}
 			});
+			
+			return this;
 		}
 	}
 });
