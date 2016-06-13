@@ -1,7 +1,7 @@
 {
-  "name": "tooltipster-follower",
-  "main": ["dist/js/tooltipster-follower.min.js"],
-  "dependencies": {
-    "tooltipster": ">=4.0.0"
-  }
+	"name": "tooltipster-follower",
+	"main": ["dist/js/tooltipster-follower.min.js"],
+	"dependencies": {
+		"tooltipster": ">=4.0.0"
+	}
 }
