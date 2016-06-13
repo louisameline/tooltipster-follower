@@ -7,6 +7,9 @@
 	"bugs": {
 		"url": "https://github.com/louisameline/tooltipster-follower/issues"
 	},
+	"dependencies": {
+		"tooltipster": ">=4.0.0"
+	},
 	"description": "A Tooltipster plugin to make the tooltip follow the cursor.",
 	"devDependencies": {
 		"grunt": "1.0.1",
@@ -25,7 +28,7 @@
 		"tooltipster"
 	],
 	"license": "MIT",
-	"main": "tooltipster-follower.min.js",
+	"main": "dist/js/tooltipster-follower.min.js",
 	"name": "tooltipster-follower",
 	"repository": {
 		"type": "git",
