@@ -72,7 +72,7 @@ $.tooltipster._plugin({
 			self.__optionsFormat();
 			
 			// reformat every time the options are changed
-			self.__instance._on('destroyed.'+ self.__namespace, function() {
+			self.__instance._on('destroy.'+ self.__namespace, function() {
 				self.__destroy();
 			});
 			
