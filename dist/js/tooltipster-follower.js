@@ -1,5 +1,5 @@
 /**
- * tooltipster-follower v0.1.0
+ * tooltipster-follower v0.1.1
  * https://github.com/louisameline/tooltipster-follower/
  * Developed by Louis Ameline
  * MIT license
