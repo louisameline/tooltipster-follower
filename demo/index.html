@@ -35,6 +35,16 @@
 				top: 200px;
 				width: 50px;
 			}
+			
+			#static {
+				border: 1px solid red;
+				display: inline-block;
+				margin: 100px 100px;
+				min-height: 200px;
+				min-width: 200px;
+				padding: 30px;
+				text-align: center;
+			}
 		</style>
 		
 		<script type="text/javascript">
@@ -115,6 +125,11 @@
 					scroll: false
 				});
 				
+				$('#static').tooltipster({
+					content: 'Hello',
+					plugins: ['laa.follower']
+				});
+				
 				$('#fixed').tooltipster({
 					content: 'fixed',
 					plugins: ['laa.follower']
@@ -124,6 +139,7 @@
 	</head>
 	<body>
 		<span class="tooltip">Drag me around the edges to see me deal with overflow</span>
+		<div id="static">Hover me</div>
 		<div id="fixed"></div>
 	</body>
 </html>
