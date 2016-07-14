@@ -1,5 +1,5 @@
 /**
- * tooltipster-follower v0.1.1
+ * tooltipster-follower v0.1.2
  * https://github.com/louisameline/tooltipster-follower/
  * Developed by Louis Ameline
  * MIT license
@@ -52,12 +52,14 @@ $.tooltipster._plugin({
 			
 			// list of instance variables
 			
+			self.__displayed;
 			self.__helper;
 			// the inition repositionOnScroll option value
 			self.__initialROS = instance.option('repositionOnScroll');
 			self.__instance = instance;
 			self.__latestMouseEvent;
 			self.__namespace = 'tooltipster-follower-'+ Math.round(Math.random()*1000000);
+			self.__openingTouchEnded;
 			self.__pointerPosition;
 			self.__previousState = 'closed';
 			self.__size;
@@ -167,7 +169,8 @@ $.tooltipster._plugin({
 							'<div class="tooltipster-content"></div>' +
 						'</div>' +
 					'</div>'
-				);
+				),
+				$document = $($.tooltipster._env.window.document);
 			
 			// apply min/max width if asked
 			if (self.__options.minWidth) {
@@ -179,9 +182,41 @@ $.tooltipster._plugin({
 			
 			self.__instance._$tooltip = $html;
 			
-			$($.tooltipster._env.window.document).on('mousemove.'+ self.__namespace, function(event) {
-				self.__follow(event);
+			// not displayed until we have a mousemove event
+			self.__displayed = false;
+			self.__openingTouchEnded = false;
+			
+			$document.on('mousemove.'+ self.__namespace, function(event) {
+				
+				// don't follow the finger after the opening gesture has ended, if the tap
+				// close trigger is used. However we cannot ignore the event if we are right
+				// after the opening tap, since we must use to open it the first time
+				if (!self.__openingTouchEnded || !self.__displayed) {
+					self.__follow(event);
+				}
 			});
+			
+			// This addresses the following situation: the user taps the tooltip open, then
+			// taps somewhere else on the screen to close it. We'd expect the tooltip not to
+			// move when the closing gesture is executed but it might be the case if the tap
+			// is actually a touchstart+touchmove+touchend (which happens if the finger
+			// slightly moves during the tap). Although it's only logical, we'll prevent it
+			// as it would likely be unexpected by everyone. To do that, we'll unbind our
+			// "move" listener when the opening gesture ends (if it even was a gesture that
+			// opened the tooltip).
+			var triggerClose = self.__instance.option('triggerClose');
+			
+			if (triggerClose.tap) {
+				
+				// this will catch an opening tap event since we have (supposedly) been called
+				// upon the event on the origin and it has not bubbled to the document yet
+				$document.on('touchend.'+ self.__namespace + ' touchcancel.'+ self.__namespace, function(event) {
+					
+					// we're not using a timeout to remove the mousemove listener since it
+					// break things for an unknown reason in Chrome mobile
+					self.__openingTouchEnded = true;
+				});
+			}
 			
 			// tell the instance that the tooltip element has been created
 			self.__instance._trigger('created');
@@ -228,6 +263,8 @@ $.tooltipster._plugin({
 			}
 			
 			if (event) {
+				
+				this.__displayed = true;
 				
 				var coord = {},
 					anchor = this.__options.anchor,
