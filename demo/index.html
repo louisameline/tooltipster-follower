@@ -27,6 +27,15 @@
 				padding: 30px;
 			}
 			
+			.unselectable {
+				-khtml-user-select:none;
+				-moz-user-select:none;
+				-ms-user-select:none;
+				-o-user-select: none;
+				-webkit-user-select:none;
+				user-select:none;
+			}
+			
 			#fixed {
 				background: red;
 				height: 50px;
@@ -38,22 +47,20 @@
 			
 			#static {
 				border: 1px solid red;
-				display: inline-block;
+				height: 200px;
 				margin: 100px 100px;
-				min-height: 200px;
-				min-width: 200px;
 				padding: 30px;
 				text-align: center;
+				width: 200px;
 			}
 			
 			#staticclick {
 				border: 1px solid red;
-				display: inline-block;
+				height: 100px;
 				margin: 200px 50px;
-				min-height: 100px;
-				min-width: 100px;
 				padding: 30px;
 				text-align: center;
+				width: 100px;
 			}
 		</style>
 		
@@ -154,9 +161,9 @@
 		</script>
 	</head>
 	<body>
-		<span class="tooltip">Drag me around the edges to see me deal with overflow</span>
-		<div id="static">Hover me</div>
-		<div id="staticclick">Click/tap me</div>
-		<div id="fixed"></div>
+		<span class="tooltip unselectable">Drag me around the edges to see me deal with overflow</span>
+		<div id="static" class="unselectable">Hover me</div>
+		<div id="staticclick" class="unselectable">Click/tap me</div>
+		<div id="fixed" class="unselectable"></div>
 	</body>
 </html>
