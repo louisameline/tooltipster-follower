@@ -45,6 +45,16 @@
 				padding: 30px;
 				text-align: center;
 			}
+			
+			#staticclick {
+				border: 1px solid red;
+				display: inline-block;
+				margin: 200px 50px;
+				min-height: 100px;
+				min-width: 100px;
+				padding: 30px;
+				text-align: center;
+			}
 		</style>
 		
 		<script type="text/javascript">
@@ -130,6 +140,12 @@
 					plugins: ['laa.follower']
 				});
 				
+				$('#staticclick').tooltipster({
+					content: 'Hello',
+					plugins: ['laa.follower'],
+					trigger: 'click'
+				});
+				
 				$('#fixed').tooltipster({
 					content: 'fixed',
 					plugins: ['laa.follower']
@@ -140,6 +156,7 @@
 	<body>
 		<span class="tooltip">Drag me around the edges to see me deal with overflow</span>
 		<div id="static">Hover me</div>
+		<div id="staticclick">Click/tap me</div>
 		<div id="fixed"></div>
 	</body>
 </html>
