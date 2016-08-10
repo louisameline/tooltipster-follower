@@ -1,5 +1,5 @@
 /**
- * tooltipster-follower v0.1.2
+ * tooltipster-follower v0.1.4
  * https://github.com/louisameline/tooltipster-follower/
  * Developed by Louis Ameline
  * MIT license
@@ -586,10 +586,15 @@ $.tooltipster._plugin({
 					width: position.size.width
 				});
 			
-			// reposition. We don't pass the event as it may be stale if it's the mouseenter
-			// event that initially started an opening delay. We rely on the events we
-			// recorded ourselves instead.
-			self.__follow();
+			// reposition. We don't pass the event if it's a mouseenter/touchstart event as
+			// it may be stale if it's the event that initially started an opening delay
+			// (there may have been move events after that), so we rely on the events we
+			// recorded ourselves instead. If it's a click event we'll use it but only in
+			// IE because Chrome and Firefox trigger an additional mousemove event when the
+			// mouse is clicked and that's enough for us.
+			var e = ($.tooltipster._env.IE && event.type === 'click') ? event : null;
+			
+			self.__follow(e);
 			
 			// append the tooltip HTML element to its parent
 			self.__instance._$tooltip.appendTo(self.__instance.option('parent'));
