@@ -522,7 +522,14 @@ $.tooltipster._plugin({
 				$clone = self.__instance._$tooltip.clone(),
 				// start position tests session
 				ruler = $.tooltipster._getRuler($clone),
-				rulerResults = ruler.free().measure(),
+				animation = self.__instance.option('animation');
+			
+			// an animation class could contain properties that distort the size
+			if (animation) {
+				$clone.removeClass('tooltipster-'+ animation);
+			}
+			
+			var rulerResults = ruler.free().measure(),
 				position = {
 					size: rulerResults.size
 				};
