@@ -1,5 +1,5 @@
 /**
- * tooltipster-follower v0.1.4
+ * tooltipster-follower v0.1.5
  * https://github.com/louisameline/tooltipster-follower/
  * Developed by Louis Ameline
  * MIT license
@@ -544,7 +544,14 @@ $.tooltipster._plugin({
 				$clone = self.__instance._$tooltip.clone(),
 				// start position tests session
 				ruler = $.tooltipster._getRuler($clone),
-				rulerResults = ruler.free().measure(),
+				animation = self.__instance.option('animation');
+			
+			// an animation class could contain properties that distort the size
+			if (animation) {
+				$clone.removeClass('tooltipster-'+ animation);
+			}
+			
+			var rulerResults = ruler.free().measure(),
 				position = {
 					size: rulerResults.size
 				};
