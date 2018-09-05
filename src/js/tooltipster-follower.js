@@ -577,7 +577,7 @@ $.tooltipster._plugin({
 			// recorded ourselves instead. If it's a click event we'll use it but only in
 			// IE because Chrome and Firefox trigger an additional mousemove event when the
 			// mouse is clicked and that's enough for us.
-			var e = ($.tooltipster._env.IE && event.type === 'click') ? event : null;
+			var e = ($.tooltipster._env.IE && event && event.type === 'click') ? event : null;
 			
 			self.__follow(e);
 			
